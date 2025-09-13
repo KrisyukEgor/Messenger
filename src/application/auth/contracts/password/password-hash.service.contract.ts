@@ -1,4 +1,4 @@
-export abstract class AbstractPasswordHasher {
+export abstract class AbstractPasswordHashService {
     abstract hash(password: string): Promise<string>;
     abstract compare(plainPassword, hashedPassword): Promise<boolean>;
 }

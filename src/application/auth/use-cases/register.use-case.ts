@@ -1,37 +1,44 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { AbstractUserRepository } from "../../user/contracts/user.repository.contract";
-import { User } from "src/domain/user/entities/user.entity";
-import { RegisterRequestDTO } from "src/presentation/auth/dto/request/register.request.dto";
-import { AbstractPasswordHasher } from "../contracts/password-hasher.contract";
-import { v4 as uuid } from "uuid";
-import { Status } from "src/domain/user/value-objects/status.value-object";
+import { AuthResponse } from "../dto/auth-response.interface";
+import { TokenGeneratorService } from "../services/token-generator.service";
+import { UserCreateService } from "../services/user-create.service";
+
+export interface RegisterParams {
+    name: string;
+    email: string;
+    password: string;
+}
 
 @Injectable()
 export class RegisterUseCase {
     constructor(
         private readonly userRepository: AbstractUserRepository,
-        private readonly passwordHasher: AbstractPasswordHasher
-    ) {}
+        private readonly tokenGeneratorService: TokenGeneratorService,
+        private readonly userCreateService: UserCreateService
+    ){}
 
-    async execute(dto: RegisterRequestDTO): Promise<User> {
-        const existingUser = await this.userRepository.findUserByEmail(dto.email);
+    async execute(params: RegisterParams): Promise<AuthResponse> {
+        const existingUser = await this.userRepository.findUserByEmail(params.email);
 
         if(existingUser) {
-            throw new BadRequestException(`user with this email ${dto.email} already exists`);
+            throw new BadRequestException(`user with this email ${params.email} already exists`);
         }
 
-        const hashedPassword = await this.passwordHasher.hash(dto.password);
+        const user = await this.userCreateService.createUser(params);
 
-        const user = new User({
-            id: uuid(),
-            name: dto.name,
-            email: dto.email,
-            password: hashedPassword,
-            status: Status.offline(),
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
+        const savedUser = await this.userRepository.save(user);
 
-        return this.userRepository.save(user);
+        const {accessToken, refreshToken} = await this.tokenGeneratorService.generateTokens(savedUser);
+
+        return {
+            accessToken,
+            refreshToken,
+            user: {
+                id: savedUser.getId(),
+                name: savedUser.getName(),
+                email: savedUser.getEmail()
+            }
+        }
     }
 }

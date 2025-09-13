@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { AbstractPasswordHasher } from "src/application/auth/contracts/password-hasher.contract";
+import { AbstractPasswordHashService } from "src/application/auth/contracts/password/password-hash.service.contract";
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
-export class BcryptPasswordHasherService implements AbstractPasswordHasher {
+export class BcryptPasswordHashService implements AbstractPasswordHashService {
     private readonly salt = 10;
 
     async hash(password: string): Promise<string> {

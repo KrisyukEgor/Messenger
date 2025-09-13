@@ -1,17 +1,24 @@
 import { User } from "src/domain/user/entities/user.entity";
-import { RegisterResponseDTO } from "../dto/response/register.response.dto";
+import { AuthResponseDTO } from "../dto/response/auth.response.dto";
+import { AuthResponse } from "src/application/auth/dto/auth-response.interface";
 
 export class AuthResponseMapper {
-    static ToCreateUserResponse(user: User): RegisterResponseDTO {
-        const dto = new RegisterResponseDTO();
+    static ToAuthResponseDTO(response: AuthResponse): AuthResponseDTO {
 
-        dto.id = user.getId();
-        dto.name = user.getName();
-        dto.email = user.getEmail();
-        dto.status = user.getStatus().toString();
-        dto.createdAt = user.getCreatedAt();
-        dto.updatedAt = user.getUpdatedAt();
+        const {accessToken, user, refreshToken, ...rest} = response;
+
+        const dto = new AuthResponseDTO();
+
+        dto.accessToken = accessToken;
+        dto.refreshToken = refreshToken;
+        dto.user = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+        }
 
         return dto;
     }
-}
+
+ }
+
