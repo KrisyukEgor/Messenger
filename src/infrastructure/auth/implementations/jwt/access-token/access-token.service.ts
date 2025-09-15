@@ -45,7 +45,7 @@ export class AccessTokenService implements AbstractAccessTokenService {
         }
     }
 
-    private isValidPayload(payload: any): payload is AccessTokenPayload {
+    isValidPayload(payload: any): payload is AccessTokenPayload {
         return (
             typeof payload === "object" &&
             payload !== null && 

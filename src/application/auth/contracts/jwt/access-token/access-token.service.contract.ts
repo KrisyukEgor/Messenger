@@ -4,4 +4,5 @@ export abstract class AbstractAccessTokenService {
     abstract generateAccessToken(payload: AccessTokenPayload): Promise<string>;
     abstract verifyAccessToken(token: string): Promise<AccessTokenPayload>;
     abstract decodeAccessToken(token: string): AccessTokenPayload;
+    abstract isValidPayload(payload: any): payload is AccessTokenPayload;
 }
