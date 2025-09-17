@@ -63,15 +63,34 @@ export class RefreshTokenService implements AbstractRefreshTokenService {
       try {
          const refreshToken = await this.refreshTokenRepository.findToken(token);
 
-         if(refreshToken && !refreshToken.revoke) {
+         if(refreshToken && !refreshToken.isRevoked) {
             refreshToken.revoke();
    
             await this.refreshTokenRepository.save(refreshToken);
+         }
+         else {
+            console.log(refreshToken);
+            throw new Error('Can not find refreshToken');
          }
       }
       catch(error) {
          console.log('Refresh token revoke failed', error);
          throw new InternalServerErrorException("Failed to revoke refresh token");
+      }
+   }
+
+   async revokeAllUserTokens(userId: string): Promise<void> {
+      try {
+         const userRefreshTokens = await this.refreshTokenRepository.findAllUserTokens(userId);
+
+         const activeTokens = userRefreshTokens.filter(token => !token.isExpired());
+
+         await Promise.all(
+            activeTokens.map(entity => this.revoke(entity.token))
+         )
+      }
+      catch(error) {
+         
       }
    }
 

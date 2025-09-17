@@ -3,6 +3,7 @@ import { AbstractUserRepository } from "src/application/user/contracts/user.repo
 import { AuthResponse } from "../dto/auth-response.interface";
 import { AbstractPasswordHashService } from "../contracts/password/password-hash.service.contract";
 import { TokenGeneratorService } from "../services/token-generator.service";
+import { AbstractRefreshTokenService } from "../contracts/jwt/refresh-token/refresh-token.service.contract";
 
 export interface LoginParams {
     email: string;
@@ -14,7 +15,8 @@ export class LoginUseCase {
     constructor(
         private readonly userRepository: AbstractUserRepository,
         private readonly passwordHashService: AbstractPasswordHashService,
-        private readonly tokenGeneratorService: TokenGeneratorService
+        private readonly tokenGeneratorService: TokenGeneratorService,
+        private readonly refreshTokenService: AbstractRefreshTokenService
     ) {}
 
     async execute(params: LoginParams): Promise<AuthResponse> {
@@ -32,6 +34,8 @@ export class LoginUseCase {
             throw new UnauthorizedException('Invalid email or password')
         }
 
+        await this.refreshTokenService.revokeAllUserTokens(existingUser.getId());
+        
         const {accessToken, refreshToken} = await this.tokenGeneratorService.generateTokens(existingUser);
 
         return {

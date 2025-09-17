@@ -5,5 +5,6 @@ export abstract class AbstractRefreshTokenService {
     abstract generateRefreshToken(payload: RefreshTokenPayload): Promise<string>;
     abstract validate(token: string): Promise<RefreshTokenPayload>;
     abstract revoke(token: string): Promise<void>;
+    abstract revokeAllUserTokens(userId: string): Promise<void>;
     abstract rotate(oldToken: string): Promise<string>;
 }

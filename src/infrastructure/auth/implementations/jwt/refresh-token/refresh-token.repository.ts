@@ -30,15 +30,23 @@ export class RefreshTokenRepository implements AbstractRefreshTokenRepository {
     }
 
     async findExpired(): Promise<RefreshTokenEntity[]> {
-        const ormEntities = await this.refreshTokenRepository.find({
+        const ormTokensEntities = await this.refreshTokenRepository.find({
             where: {
                 expiresAt: LessThan(new Date())
             }
         })
 
-        return ormEntities.map(entity => RefreshTokenMapper.toDomain(entity));
+        return ormTokensEntities.map(token => RefreshTokenMapper.toDomain(token));
     }
 
+    async findAllUserTokens(userId: string): Promise<RefreshTokenEntity[]> {
+        const ormTokensEntities = await this.refreshTokenRepository.find({
+            where: {
+                userId: userId
+            }
+        })
+        return ormTokensEntities.map(token => RefreshTokenMapper.toDomain(token));
+    }
 
     async deleteTokens(entities: RefreshTokenEntity[]): Promise<void> {
         const ids = entities.map(entity => entity.id);
