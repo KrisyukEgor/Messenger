@@ -24,6 +24,7 @@ import { JwtPayloadFactory } from "../implementations/jwt/jwt-payload.factory";
 import { RefreshTokenOrmEntity } from "../orm/orm-entities/refresh-token.orm-entity";
 import { UserCreateService } from "src/application/auth/services/user-create.service";
 import { TokenGeneratorService } from "src/application/auth/services/token-generator.service";
+import { RefreshTokenUseCase } from "src/application/auth/use-cases/refresh-token.use-case";
 
 @Module({
     imports: [
@@ -52,6 +53,7 @@ import { TokenGeneratorService } from "src/application/auth/services/token-gener
         LoginUseCase,
         UserCreateService,
         TokenGeneratorService,
+        RefreshTokenUseCase,
         {
             provide: AbstractUserRepository,
             useClass: UserRepository

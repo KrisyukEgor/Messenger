@@ -29,6 +29,16 @@ export class UserRepository implements AbstractUserRepository {
         return this.toDomain(ormUser);
     }
 
+    async findUserById(id: string): Promise<User | null> {
+        const ormUser = await this.userRepository.findOne({
+            where: {
+                id: id
+            }
+        })
+
+        return this.toDomain(ormUser);
+    }
+
     private toDomain(ormUser: UserOrmEntity | null) {
         return ormUser !== null ? UserMapper.toDomain(ormUser) : null;
     }
