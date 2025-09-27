@@ -24,7 +24,7 @@ export class AuthController {
     }
     
     @Post('login')
-    @JwtAuth()
+    @Public()
     async login(@Body() dto: LoginRequestDTO): Promise<AuthResponseDTO> {
         const serviceResponse = await this.authService.login(dto);
         return AuthResponseMapper.ToAuthResponseDTO(serviceResponse);

@@ -20,32 +20,37 @@ export class LoginUseCase {
     ) {}
 
     async execute(params: LoginParams): Promise<AuthResponse> {
-        const existingUser = await this.userRepository.findUserByEmail(params.email);
-
-        if(!existingUser) {
-            throw new UnauthorizedException('Invalid email or password')
-        }
-
-        const isValidPassword = await this.passwordHashService.compare(
-            params.password, existingUser.getPassword()
-        )
-
-        if(!isValidPassword) {
-            throw new UnauthorizedException('Invalid email or password')
-        }
-
-        await this.refreshTokenService.revokeAllUserTokens(existingUser.getId());
-        
-        const {accessToken, refreshToken} = await this.tokenGeneratorService.generateTokens(existingUser);
-
-        return {
-            accessToken,
-            refreshToken,
-            user: {
-                id: existingUser.getId(),
-                name: existingUser.getName(),
-                email: existingUser.getEmail()
+        try {
+            const existingUser = await this.userRepository.findUserByEmail(params.email);
+    
+            if(!existingUser) {
+                throw new UnauthorizedException('Invalid email or password')
             }
+    
+            const isValidPassword = await this.passwordHashService.compare(
+                params.password, existingUser.getPassword()
+            )
+    
+            if(!isValidPassword) {
+                throw new UnauthorizedException('Invalid email or password')
+            }
+    
+            await this.refreshTokenService.revokeAllUserTokens(existingUser.getId());
+            
+            const {accessToken, refreshToken} = await this.tokenGeneratorService.generateTokens(existingUser);
+    
+            return {
+                accessToken,
+                refreshToken,
+                user: {
+                    id: existingUser.getId(),
+                    name: existingUser.getName(),
+                    email: existingUser.getEmail()
+                }
+            }
+        }
+        catch(error) {
+            throw new UnauthorizedException('Can not login', error);
         }
     }
 }

@@ -83,7 +83,7 @@ export class RefreshTokenService implements AbstractRefreshTokenService {
       try {
          const userRefreshTokens = await this.refreshTokenRepository.findAllUserTokens(userId);
 
-         const activeTokens = userRefreshTokens.filter(token => !token.isExpired());
+         const activeTokens = userRefreshTokens.filter(token => !token.isExpired() && !token.isRevoked);
 
          await Promise.all(
             activeTokens.map(entity => this.revoke(entity.token))

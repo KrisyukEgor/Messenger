@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UserOrmEntity } from "src/infrastructure/user/orm-entities/user.orm-entity";
 import { AuthController } from "../../../presentation/auth/controllers/auth.controller";
@@ -25,16 +25,19 @@ import { RefreshTokenOrmEntity } from "../orm/orm-entities/refresh-token.orm-ent
 import { UserCreateService } from "src/application/auth/services/user-create.service";
 import { TokenGeneratorService } from "src/application/auth/services/token-generator.service";
 import { RefreshTokenUseCase } from "src/application/auth/use-cases/refresh-token.use-case";
+import { JwtStrategy } from "../strategies/jwt.strategy";
+import { PassportModule } from "@nestjs/passport";
 
 @Module({
     imports: [
+        PassportModule,
         TypeOrmModule.forFeature([UserOrmEntity, RefreshTokenOrmEntity]),
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory:(configService: ConfigService) => {
                 const config = configService.get<JwtConfig>(CONFIG_TOKENS.JWT)
-
+                
                 return {
                     secret: config?.accessSecret,
                     signOptions: {
@@ -45,7 +48,7 @@ import { RefreshTokenUseCase } from "src/application/auth/use-cases/refresh-toke
         })
     ],
     controllers: [
-        AuthController
+        AuthController,
     ],
     providers: [
         AuthService,
@@ -54,6 +57,7 @@ import { RefreshTokenUseCase } from "src/application/auth/use-cases/refresh-toke
         UserCreateService,
         TokenGeneratorService,
         RefreshTokenUseCase,
+        JwtStrategy,
         {
             provide: AbstractUserRepository,
             useClass: UserRepository

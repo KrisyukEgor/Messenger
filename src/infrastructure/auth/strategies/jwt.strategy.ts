@@ -7,22 +7,27 @@ import { CONFIG_TOKENS } from 'src/infrastructure/config/config.constants';
 import { AbstractAccessTokenService } from 'src/application/auth/contracts/jwt/access-token/access-token.service.contract';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     constructor(
         private readonly accessTokenService: AbstractAccessTokenService,
         private readonly configService: ConfigService
     ) {
-        const jwtAccessSecret = configService.get<JwtConfig>(CONFIG_TOKENS.JWT)?.accessSecret;
+        const jwtConfig = configService.get<JwtConfig>(CONFIG_TOKENS.JWT);
+  
+        if (!jwtConfig?.accessSecret) {
+            throw new Error('JWT access secret is not configured! Check your .env file');
+        }
 
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
-            secretOrKey: jwtAccessSecret!
-        })
+            ignoreExpiration: true,
+            secretOrKey: jwtConfig.accessSecret, 
+        });
     }
 
     async validate(payload) {
+
         if(this.accessTokenService.isValidPayload(payload)) {
             return payload;
         }
